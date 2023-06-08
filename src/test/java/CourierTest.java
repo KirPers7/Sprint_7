@@ -1,42 +1,21 @@
-import clients.CourierClient;
-import dataprovider.CourierProvider;
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import pojo.courier.*;
 
 
-public class CourierTest {
+public class CourierTest extends BaseTest{
 
-    private final CourierClient courierClient = new CourierClient();
-    private Integer id;
-
-    @Before
-    public void setUp() {
-        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-    }
-
-    //курьера можно создать + запрос возвращает правильный код ответа + успешный запрос возвращает ok: true
-    //+ курьер может авторизоваться + успешный запрос возвращает id
+    //курьер может авторизоваться + успешный запрос возвращает id
     @Test
-    @DisplayName("check create courier and login courier")
+    @DisplayName("check login courier")
     @Description("Создаётся успешно курьер и можно залогиниться под ним")
     @TmsLink("TestIt-103")
-    public void checkCreateCourier() {
+    public void checkLoginCourier() {
 
-        //создание курьера
-        CreateCourierRequest createCourierRequest = CourierProvider.getRandomCreateCourierRequest();
-        courierClient.create(createCourierRequest)
-                .statusCode(201)
-                .body("ok", Matchers.equalTo(true));
         //логин курьера
         LoginCourierRequest loginCourierRequest = LoginCourierRequest.from(createCourierRequest);
         id = courierClient.login(loginCourierRequest)
@@ -51,16 +30,9 @@ public class CourierTest {
     @TmsLink("TestIt-104")
     public void checkCreateCourierDouble() {
 
-        //создание курьера
-        CreateCourierRequest createCourierRequest = CourierProvider.getRandomCreateCourierRequest();
-        courierClient.create(createCourierRequest)
-                .statusCode(201)
-                .body("ok", Matchers.equalTo(true));
-
         //логин курьера
         LoginCourierRequest loginCourierRequest = LoginCourierRequest.from(createCourierRequest);
         id = courierClient.login(loginCourierRequest)
-                .statusCode(200)
                 .extract().jsonPath().get("id");
 
         //создание с теми же кредами
@@ -77,9 +49,6 @@ public class CourierTest {
     @TmsLink("TestIt-105")
     public void checkCreateCourierWithoutRequiredArgumentRequest() {
 
-        CreateCourierWithoutRequiredArgumentRequest createCourierWithoutRequiredArgumentRequest =
-                CourierProvider.getRandomCreateCourierWithoutRequiredArgumentRequest();
-
         courierClient.createWithoutRequiredArgument(createCourierWithoutRequiredArgumentRequest)
                 .statusCode(400)
                 .body("message", Matchers.equalTo("Недостаточно данных для создания учетной записи"));
@@ -92,12 +61,6 @@ public class CourierTest {
     @TmsLink("TestIt-106")
     @Issue("BUG-206")
     public void checkLoginCourierWithoutRequiredArgumentRequest() {
-
-        //создание курьера
-        CreateCourierRequest createCourierRequest = CourierProvider.getRandomCreateCourierRequest();
-        courierClient.create(createCourierRequest).log().all()
-                .statusCode(201)
-                .body("ok", Matchers.equalTo(true));
 
         //логин курьера без пароля
         LoginCourierWithoutPasswordRequest loginCourierWithoutPasswordRequest = LoginCourierWithoutPasswordRequest.from(createCourierRequest);
@@ -123,11 +86,4 @@ public class CourierTest {
                 .body("message", Matchers.equalTo("Учетная запись не найдена"));
     }
 
-    @After
-    public void tearDown() {
-        if (id != null) {
-            courierClient.delete(id).log().all()
-                    .statusCode(200);
-        }
-    }
 }

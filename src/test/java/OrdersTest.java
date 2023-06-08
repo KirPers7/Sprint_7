@@ -1,12 +1,9 @@
-import clients.OrderClient;
 import io.qameta.allure.Description;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
 import org.junit.Test;
 
-public class OrdersTest {
-
-    private final OrderClient orderClient = new OrderClient();
+public class OrdersTest extends BaseOrdersTest{
 
     //вывод списка всех заказов
     @Test

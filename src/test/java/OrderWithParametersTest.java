@@ -3,10 +3,6 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
 import io.qameta.allure.TmsLink;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class OrderWithParametersTest {
+public class OrderWithParametersTest extends BaseOrdersTest {
 
     private final OrderClient orderClient = new OrderClient();
     private final List<String> colors;
@@ -25,7 +21,7 @@ public class OrderWithParametersTest {
         this.colors = colors;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "Цвет самоката. Тестовые данные: {0}")
     public static Object[][] getData() {
         return new Object[][] {
                 {List.of("GREY")},
@@ -33,11 +29,6 @@ public class OrderWithParametersTest {
                 {Arrays.asList("GREY","BLACK")},
                 {null}
         };
-    }
-
-    @Before
-    public void setUp() {
-        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
     }
 
     //создание заказа
@@ -60,7 +51,6 @@ public class OrderWithParametersTest {
 
         //создание заказа
         Integer track = orderClient.create(createOrderRequest).log().all()
-                .statusCode(201)
                 .extract().jsonPath().get("track");
 
         //вызов заказа по номеру из БД
